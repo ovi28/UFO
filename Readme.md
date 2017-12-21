@@ -4,6 +4,7 @@ This can lead to security issues like data leaks, website takeovers and more.
 However, most attacks can be prevented by blocking unnatural user behavior.
 Blocking strange users can lead to a safer website.
 ## Web scanners and bot attacks - what are they how do they work?
+Web scanners, also knows as bots, are automated scripts that try to find vulnerabilities in as many websites as possible, be it a PHP website or some other type.
 Looking through the logs of our Hacker News close, we discovered a few "users" that were trying to access pages that they shouldn't. A couple of exameples from the logs:
 * [client 178.62.195.55:44528] script '/var/www/html/muieblackcat.php' not found or unable to stat
 *  [client 80.211.230.161:33248] script '/var/www/html/w00tw00t.at.blackhats.romanian.anti-sec:).php' not found or unable to stat
@@ -11,6 +12,7 @@ Looking through the logs of our Hacker News close, we discovered a few "users" t
 *  [client 52.91.213.21:49590] script '/var/www/html/mysql.php' not found or unable to stat
 
 The question is: Why would a normal user want to access some pages that would never be on a Hacker News clone? Well, it's obvious that there are not normal users, so an investigation began to see what exactly is "muieblackhat" and "w00tw00t.at.blackhats.romanian.anti-sec:)".
+Most malicious web scanners are looking for known vulnerabilities in services that your website might have, like phpMyAdmin. Fortunatelly, the bots that we encountered were targeting those old vulnerabilities that were patched.
 First of all, the IPs seem to be from all over the world. By using an IP location checker website we found out that we have this kind of requests to our website from Italy, Netherlands, USA and Ukraine. Our theory is that some of the attackers are using VPNs to go around websites that block countries like Ukraine, China, and Russia which are famous for hacking attacks.
 Muieblackcat is a vulnerability scanning product. Remote attackers can use Muieblackcat to detect vulnerabilities on a target server. 
 The other one, w00tw00t.at.blackhats.romanian.anti-sec:), is part of a pack called "ZmEu attacks" and it does the same things as Muieblackcat.
@@ -26,9 +28,11 @@ Fortunately, there are a few simple ways to defend yourself against muieblackcat
 * Don't have online any kind of page that runs SQL scripts because they will be found and run. If you're doing testing and you need scripts for that, host them in a closed environment where they cannot be accessed from the outside.
 * Check your logs and block every suspicious IP. Even though, the attacker might have failed to do any kind of damage, he might return later from the same IP and try something stronger.
 
+If your website is not intended to run any php scripts, the best way to defend against the bots that we encountered is to stop php processing in your server altogether.
 On our Hacker News clone, we implemented two major things to deal with these attacks.
 Firstly, we made a few fake pages which we found to be frequently accessed by these attackers and we made them redirect back to their IP address on the same page. In the following case "[client 178.62.195.55:44528] script '/var/www/html/muieblackcat.php' not found or unable to stat" our webpage will redirect to 178.62.195.55:44528/muieblackcat.php. In the future, we will make these pages to blacklist the bot that tries to access them.
-Secondly, we modified our .htaccess file to give a 403 Forbidden error, instead of the 404. We are not sure if this will have any impact on the bots, but hopefuly it will send a message that they are not welcome on our Hacker News clone.
+Secondly, we modified our .htaccess file to give a 403 Forbidden error, instead of the 404. The .htaccess is a file executed by the server and it can alter the server's configuration. In this case we used it to alter the error that the bots are receiving. We are not sure if this will have any impact on the bots, but hopefuly it will send a message that they are not welcome on our Hacker News clone.
+We simulated a bot by going to one of the pages that the real bots tried to access and we encountered a 403 Forbidden error instead of the 404.
 
 ## Conclusion
 In conclusion, everyone should keep in mind that if a website is accessible from the outside, it will be attacked. You can prevent some of those attacks, by making sure that there are no loose ends and closing down everything that normal users are not supposed to access.
